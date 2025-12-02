@@ -2,33 +2,17 @@ use std::fs;
 
 fn main() {
     day1();
-    
-    // debug();
-
-}
-
-fn debug() {
-    let mut dial_position = 44;
-    
-    dial_position += 56;
-    
-    dial_position %= 100;
-    
-    println!("Testing {}",  dial_position);
 }
 
 fn day1() {
     let mut dial_position = 50;
+    let mut total_zeroes = 0;
     
     let input = fs::read_to_string("./src/day1/input").expect("Failed to read input file");
     
-    let mut total_zeroes = 0;
-    
     for line in input.lines() {
         // Get first char 
-        let direction = line.chars().next().unwrap();
-        
-        // Get number
+        let direction = line.chars().next().unwrap();        
         let number = line[1..].trim().parse::<i32>().unwrap();
         
         let old_position = dial_position;
@@ -38,7 +22,12 @@ fn day1() {
                 dial_position += number;
                 
                 if dial_position >= 100 { 
-                    total_zeroes += (dial_position - 100) / 100 ; // Part 2
+                    let zeros_to_add = dial_position / 100;
+                    
+                    total_zeroes += zeros_to_add; // Part 2
+                    
+                    println!("Overflow: {}, Total Zeros Added: {}", dial_position, zeros_to_add);
+                    
                     dial_position %= 100;
                 }
             },
@@ -46,8 +35,16 @@ fn day1() {
                 dial_position -= number;
                 
                 if dial_position <= 0 {
-                    println!("Undeferflow: {}, Total Zeros Added: {}", dial_position, ((-dial_position) / 100) + 1);
-                    total_zeroes += ((-dial_position) / 100) + 1; // Part 2
+                    
+                    let mut zeroes_to_add = (-dial_position) / 100;
+                    
+                    if old_position != 0 {
+                        zeroes_to_add += 1;
+                    }
+                    
+                    println!("Underflow: {}, Total Zeros Added: {}", dial_position, zeroes_to_add);
+                    
+                    total_zeroes += zeroes_to_add; // Part 2
                     
                     dial_position += (100 * ((-dial_position / 100) + 1)) as i32;
                     dial_position %= 100;
