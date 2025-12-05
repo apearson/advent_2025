@@ -7,12 +7,25 @@ const EMPTY_CELL: char = '.';
 pub fn start() {
   let input = fs::read_to_string("./src/day4/input").expect("Failed to read input file");
   
-  let board = parse_board(input);
+  let mut board = parse_board(input);
   
-  let num_of_accessible_rolls = calculate_accessible(board);
+  let mut total_removed = 0;
   
-  println!("The number of accessible rolls: {}", num_of_accessible_rolls);
+  // Loop until set of number of rolls stops changing
+  loop {
+    let (current_accessible_rolls, next_gen) = calculate_accessible(board);
+    
+    println!("The number of accessible rolls: {}", current_accessible_rolls);
+    
+    if current_accessible_rolls == 0 {
+      break;
+    }
+    
+    board = next_gen;
+    total_removed += current_accessible_rolls;
+  }
   
+  println!("The final number of removed rolls: {}", total_removed);
 }
 
 pub fn parse_board(input: String) -> Vec<Vec<char>> {
@@ -24,8 +37,10 @@ pub fn parse_board(input: String) -> Vec<Vec<char>> {
   return board;
 }
 
-pub fn calculate_accessible(board: Vec<Vec<char>>) -> isize {
+pub fn calculate_accessible(board: Vec<Vec<char>>) -> (isize, Vec<Vec<char>>) {
   let mut total_accessible = 0;
+  let mut next_gen = board.clone();
+  
   let height = board.len() as isize;
   
   // Directions 
@@ -65,9 +80,10 @@ pub fn calculate_accessible(board: Vec<Vec<char>>) -> isize {
       
       if neighbors < 4 {
         total_accessible += 1;
+        next_gen[r][c] = '.';
       }
     }
   }
   
-  return total_accessible;
+  return (total_accessible, next_gen);
 }
