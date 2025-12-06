@@ -1,58 +1,85 @@
 use std::fs;
+use itertools::Itertools;
 
 pub fn start() {
     let input = fs::read_to_string("./src/day6/input").expect("Failed to read input file");
   
     // Lines 
-    let mut numbers: Vec<Vec<i64>> = Vec::new();
+    let mut columns: Vec<Vec<char>> = Vec::new(); // 
     let mut ops: Vec<char> = Vec::new();
     
+    let lines:Vec<_>= input.lines().collect();
+    let num_of_lines = input.lines().count();
+    
     // Parse
-    for line in input.lines() {
+    for r in 0..num_of_lines {
+      let line = lines[r];
+      
       if line.contains("*") {
-        ops = line.split_ascii_whitespace().map(|s| s.chars().next().unwrap()).collect();
+        ops = line.chars().collect();
         
         continue;
       }
       
-      let line_nums = line.split_ascii_whitespace()
-        .map(|s| s.parse::<i64>().unwrap())
-        // .map(|s| s.to_string())
-        .collect();
+      let line_nums = line.chars().collect::<Vec<char>>();
       
-      numbers.push(line_nums);
+      for c  in 0..line_nums.len() {
+        if columns.len() <= c {
+          columns.push(Vec::new());
+        }
+        
+        if columns[c].len() <= r {
+          columns[c].push(' ');
+        } 
+        
+        columns[c][r] = line_nums[c];
+      }
     }
     
     let mut final_total = 0;
     
+    let mut current_numbers: Vec<i64> = Vec::new();
+    
     // Calculate
-    for c in 0.. ops.len() {
+    for c in (0.. ops.len()).rev() {
       let op = ops[c];
-      let mut problem_nums: Vec<i64> = Vec::new();
-      let mut answer = if op == '*' { 1 } else { 0 };
+      let column_nums = columns[c].clone();
+      let num_string = column_nums.into_iter().join("");
       
-      for r in 0..numbers.len() {
-         problem_nums.push(numbers[r][c].clone());
+      let trimmed_num_string = num_string.trim();
+      
+      if !trimmed_num_string.is_empty() {
+        let parsed_num = trimmed_num_string.parse::<i64>().unwrap();
+        
+        current_numbers.push(parsed_num);
       }
       
-      let num_string: Vec<_> = problem_nums.iter().map(|n| n.to_string()).collect();
-      
-      for num in problem_nums {
+      // has op code
+      if !op.is_whitespace() {
+        println!("End of problem, op: {} numbers {} to final {}", op, current_numbers.clone().into_iter().join(","), final_total);
+        
+        
+        let mut answer = 0;
         if op == '+' {
-          answer += num;
-          continue;
+          for num in current_numbers.clone() {
+            answer += num;
+          }
+          
+          final_total += answer;
         }
         
         if op == '*' {
-          answer = answer * num;
-          continue;
+          answer = 1; // Start at 1 (0 * anything = 0)
+          for num in current_numbers.clone() {
+            answer = answer * num;
+          }
+          
+          final_total += answer;
         }
         
+        current_numbers.clear();
+        continue;
       }
-      
-      final_total += answer;
-      
-      println!("Problem {}: [{}] = {}", op, num_string.join(","), answer);
     }
     
     println!("Final Total: {}", final_total);
