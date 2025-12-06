@@ -1,17 +1,13 @@
 use std::fs;
 
 pub fn start() {
-  parse_file();
-}
-
-fn parse_file() {
     let input = fs::read_to_string("./src/day6/input").expect("Failed to read input file");
   
     // Lines 
     let mut numbers: Vec<Vec<i64>> = Vec::new();
     let mut ops: Vec<char> = Vec::new();
     
-  
+    // Parse
     for line in input.lines() {
       if line.contains("*") {
         ops = line.split_ascii_whitespace().map(|s| s.chars().next().unwrap()).collect();
